@@ -1,6 +1,6 @@
-//var url_base = "http://esp32.local:3000/";
+//var url_base = "http://localhost:3000/";
 
-var url_base = "http://localhost:3000/";
+var url_base = "http://esp32.local/";
 
 var daemon = setInterval( updateStatus, 10000);
 
@@ -28,14 +28,19 @@ function updateOnOff(i) {
 }
 
 async function updateStatus() {
-  var res = await $.get( url_base + "status", null).promise();
-  cfg = JSON.parse(res);
-  $("#hValue").text(cfg.h);
-  updateOnOff(cfg.status);
+  try {
+    cfg = await $.get( url_base + "status", null);
+    $("#hValue").text(cfg.h);
+    updateOnOff(cfg.status);
+  } catch (e) {
+    $("#configResult").text(e);
+    $("#configResult").addClass("alert-danger");
+    $("#configResult").show();
+  }
 }
 
 function refreshParams() {
-  $("#irrT").val(cfg.irrT);
+  $("#irrT").val(cfg.irrT/1000);
   $("#minH").val(cfg.humMin);
 }
 
@@ -49,7 +54,7 @@ $("#off").on("click", function () {
 
 $("#config").submit(function(event) {
   event.preventDefault();
-  var irrT = $("#irrT").val();
+  var irrT = $("#irrT").val() * 1000;
   var minH = $("#minH").val();
   var body = { irrT: irrT, minH: minH }
   $.post( url_base + "config", body, function () {
