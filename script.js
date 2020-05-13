@@ -38,7 +38,7 @@ async function updateStatus() {
     })
     .catch((err) => {
       console.error(err);
-      s("#configResult").innerText = e;
+      s("#configResult").innerText = err.message;
       s("#configResult").classList.add("alert-danger");
       s("#configResult").style.display = "block";
     });
@@ -75,7 +75,7 @@ s("#config-form").addEventListener("submit", function (event) {
       setTimeout(() => s("#configResult").removeAttribute("style"), 3000);
     })
     .catch((err) => {
-      console.error(err);
+      console.error(err.message);
     });
 });
 
