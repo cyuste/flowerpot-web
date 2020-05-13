@@ -1,9 +1,9 @@
-const URL_BASE = "http://localhost:3000/"; // Perhaps it's better to have the trailing slash when building the methods
+// const URL_BASE = "http://localhost:3000/"; // Perhaps it's better to have the trailing slash when building the methods
 const s = (selector) => {
   return document.querySelector(selector);
 };
 
-// const URL_BASE = "http://esp32.local/";
+const URL_BASE = "http://esp32.local/";
 const daemon = setInterval(updateStatus, 10000);
 
 let cfg = { irrT: "0", humMin: "100" };
