@@ -1,19 +1,29 @@
-//var url_base = "http://localhost:3000/";
+// const URL_BASE = "http://localhost:3000/"; // Perhaps it's better to have the trailing slash when building the methods
+const s = (selector) => {
+  return document.querySelector(selector);
+};
 
-var url_base = "http://esp32.local/";
+const URL_BASE = "http://esp32.local/";
+const daemon = setInterval(updateStatus, 10000);
+/**
+ * HTML elements
+ */
+const onEl = s("#on");
+const offEl = s("#off");
+const irrTEl = s("#irrT");
+const minHEl = s("#minH");
+const configResultEl = s("#configResult");
 
-var daemon = setInterval( updateStatus, 10000);
-
-var cfg = { irrT: "0", humMin: "100"};
+let cfg = { irrT: "0", humMin: "100" };
 
 function setOn() {
-  $("#on").removeClass().addClass("btn btn-success");
-  $("#off").removeClass().addClass("btn btn-secondary");
+  onEl.setAttribute("class", "btn btn-success");
+  offEl.setAttribute("class", "btn btn-secondary");
 }
 
 function setOff() {
-  $("#on").removeClass().addClass("btn btn-secondary");
-  $("#off").removeClass().addClass("btn btn-danger");
+  onEl.setAttribute("class", "btn btn-secondary");
+  offEl.setAttribute("class", "btn btn-danger");
 }
 
 function updateOnOff(i) {
@@ -28,45 +38,56 @@ function updateOnOff(i) {
 }
 
 async function updateStatus() {
-  try {
-    cfg = await $.get( url_base + "status", null);
-    $("#hValue").text(cfg.h);
-    updateOnOff(cfg.status);
-  } catch (e) {
-    $("#configResult").text(e);
-    $("#configResult").addClass("alert-danger");
-    $("#configResult").show();
-  }
+  await fetch(`${URL_BASE}status`)
+    .then(async (response) => {
+      cfg = await response.json();
+      s("#hValue").innerText = cfg.h;
+      updateOnOff(cfg.status);
+    })
+    .catch((err) => {
+      console.error(err);
+      configResultEl.innerText = e;
+      configResultEl.classList.add("alert-danger");
+      configResultEl.style.display = "block";
+    });
 }
 
 function refreshParams() {
-  $("#irrT").val(cfg.irrT/1000);
-  $("#minH").val(cfg.humMin);
+  s("#irrT").innerText = cfg.irrT / 1000;
+  s("#minH").innerText = cfg.humMin;
 }
 
-$("#on").on("click", function () {
-  $.post( url_base + "on", {}, setOn);
+onEl.addEventListener("click", () => {
+  fetch(`${URL_BASE}on`, { method: "POST" }).then(() => setOn());
 });
 
-$("#off").on("click", function () {
-  $.post( url_base + "off", {}, setOff);
+offEl.addEventListener("click", () => {
+  fetch(`${URL_BASE}off`, { method: "POST" }).then(() => setOff());
 });
 
-$("#config").submit(function(event) {
+s("#config-form").addEventListener("submit", function (event) {
   event.preventDefault();
-  var irrT = $("#irrT").val() * 1000;
-  var minH = $("#minH").val();
-  var body = { irrT: irrT, minH: minH }
-  $.post( url_base + "config", body, function () {
-    refreshParams();
-    $("#configResult").text("Success!");
-    $("#configResult").removeClass("alert-danger").addClass("alert-success");
-    $("#configResult").show();
-    setTimeout(() => $("#configResult").hide(), 3000);
-  });
+  const irrT = irrTEl.value * 1000;
+  const minH = minHEl.value;
+  const requestBody = { irrT: irrT, minH: minH };
+
+  fetch(`${URL_BASE}config`, {
+    method: "POST",
+    body: JSON.stringify(requestBody),
+  })
+    .then((response) => {
+      refreshParams();
+      configResultEl.innerText = "Success!";
+      configResultEl.setAttribute("class", "alert-success");
+      configResultEl.style.display = "block";
+      setTimeout(() => configResultEl.removeAttribute("style"), 3000);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 });
 
-$(document).ready(async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   await updateStatus();
   refreshParams();
 });
