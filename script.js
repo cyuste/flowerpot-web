@@ -1,29 +1,21 @@
-// const URL_BASE = "http://localhost:3000/"; // Perhaps it's better to have the trailing slash when building the methods
+const URL_BASE = "http://localhost:3000/"; // Perhaps it's better to have the trailing slash when building the methods
 const s = (selector) => {
   return document.querySelector(selector);
 };
 
-const URL_BASE = "http://esp32.local/";
+// const URL_BASE = "http://esp32.local/";
 const daemon = setInterval(updateStatus, 10000);
-/**
- * HTML elements
- */
-const onEl = s("#on");
-const offEl = s("#off");
-const irrTEl = s("#irrT");
-const minHEl = s("#minH");
-const configResultEl = s("#configResult");
 
 let cfg = { irrT: "0", humMin: "100" };
 
 function setOn() {
-  onEl.setAttribute("class", "btn btn-success");
-  offEl.setAttribute("class", "btn btn-secondary");
+  s("#on").setAttribute("class", "btn btn-success");
+  s("#off").setAttribute("class", "btn btn-secondary");
 }
 
 function setOff() {
-  onEl.setAttribute("class", "btn btn-secondary");
-  offEl.setAttribute("class", "btn btn-danger");
+  s("#on").setAttribute("class", "btn btn-secondary");
+  s("#off").setAttribute("class", "btn btn-danger");
 }
 
 function updateOnOff(i) {
@@ -46,9 +38,9 @@ async function updateStatus() {
     })
     .catch((err) => {
       console.error(err);
-      configResultEl.innerText = e;
-      configResultEl.classList.add("alert-danger");
-      configResultEl.style.display = "block";
+      s("#configResult").innerText = e;
+      s("#configResult").classList.add("alert-danger");
+      s("#configResult").style.display = "block";
     });
 }
 
@@ -57,18 +49,18 @@ function refreshParams() {
   s("#minH").innerText = cfg.humMin;
 }
 
-onEl.addEventListener("click", () => {
+s("#on").addEventListener("click", () => {
   fetch(`${URL_BASE}on`, { method: "POST" }).then(() => setOn());
 });
 
-offEl.addEventListener("click", () => {
+s("#off").addEventListener("click", () => {
   fetch(`${URL_BASE}off`, { method: "POST" }).then(() => setOff());
 });
 
 s("#config-form").addEventListener("submit", function (event) {
   event.preventDefault();
-  const irrT = irrTEl.value * 1000;
-  const minH = minHEl.value;
+  const irrT = s("#irrT").value * 1000;
+  const minH = s("#minH").value;
   const requestBody = { irrT: irrT, minH: minH };
 
   fetch(`${URL_BASE}config`, {
@@ -77,10 +69,10 @@ s("#config-form").addEventListener("submit", function (event) {
   })
     .then((response) => {
       refreshParams();
-      configResultEl.innerText = "Success!";
-      configResultEl.setAttribute("class", "alert-success");
-      configResultEl.style.display = "block";
-      setTimeout(() => configResultEl.removeAttribute("style"), 3000);
+      s("#configResult").innerText = "Success!";
+      s("#configResult").setAttribute("class", "alert-success");
+      s("#configResult").style.display = "block";
+      setTimeout(() => s("#configResult").removeAttribute("style"), 3000);
     })
     .catch((err) => {
       console.error(err);
